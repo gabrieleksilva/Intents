@@ -48,4 +48,15 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(parametroIntent, PARAMETRO_REQUEST_CODE) */
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        //Result_ok é como se fosse o return 0 da linguagem c, indica que a tela encerrou com sucesso
+        if (requestCode == PARAMETRO_REQUEST_CODE && resultCode == RESULT_OK){
+            data?.getStringExtra(PARAMETRO_EXTRA)?.let{ retorno ->
+                amb.parametroTv.text = retorno
+            }
+        }
+    }
+
 }

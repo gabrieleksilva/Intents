@@ -32,12 +32,14 @@ class ParametroActivity : AppCompatActivity() {
         }
 
         apb.enviarParametroBt.setOnClickListener{
+            // criando uma intent
             Intent().apply {
                 apb.parametroEt.text.toString().let {
                     putExtra(PARAMETRO_EXTRA, it)
                 }
-                setResult() //para devolver o valor para a main que sera inserido no campo texto da tela de parametro
+                setResult(RESULT_OK, this) //para devolver o valor para a main que sera inserido no campo texto da tela de parametro
             }
+            finish()
         }
     }
 }
