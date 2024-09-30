@@ -3,6 +3,7 @@ package br.edu.scl.ifsp.ads.pdm.intents
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -75,5 +76,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }*/
+
+    //criar o menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
 
 }
