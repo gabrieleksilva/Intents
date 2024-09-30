@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
             subtitle = this@MainActivity.javaClass.simpleName
         }
 
+        // quando a tela secundaria abre é isso aqui que executa
         parl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK){
                 result.data?.getStringExtra(PARAMETRO_EXTRA)?.let {
@@ -50,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                 startActivityForResult(this, PARAMETRO_REQUEST_CODE)
             }*/
 // ou
-            Intent(this, ParametroActivity::class.java).apply {
+            Intent("MINHA_ACTION_PARA_PROXIMA_TELA").apply {
                 amb.parametroTv.text.toString().let {
                     putExtra(PARAMETRO_EXTRA,it)
                 }
