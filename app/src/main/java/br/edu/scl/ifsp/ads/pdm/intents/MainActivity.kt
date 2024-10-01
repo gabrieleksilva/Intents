@@ -2,8 +2,13 @@ package br.edu.scl.ifsp.ads.pdm.intents
 
 
 import android.content.Intent
+import android.content.Intent.ACTION_CALL
+import android.content.Intent.ACTION_DIAL
+import android.content.Intent.ACTION_VIEW
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -81,6 +86,35 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         return true
+    }
+
+    // eh chamada quando o usuario clica em uma das opções do item do menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.viewMi -> {
+                val url: Uri = Uri.parse(amb.parametroTv.text.toString())
+                val navegadorIntent = Intent(ACTION_VIEW, url)
+                startActivity(navegadorIntent)
+                true
+            }
+            R.id.callMi -> {
+                val telUri = Uri.parse("tel: ${amb.parametroTv.text.toString()}")
+                val discarIntent = Intent(ACTION_CALL)
+                discarIntent.setData(telUri)
+                startActivity(discarIntent)
+                true
+            }
+            R.id.dialMi -> {
+                    val telUri = Uri.parse("tel: ${amb.parametroTv.text.toString()}")
+                    val discarIntent = Intent(ACTION_DIAL)
+                    discarIntent.setData(telUri)
+                    startActivity(discarIntent)
+                    true
+            }
+            R.id.pickMi -> { true }
+            R.id.chooserMi -> { true }
+            else -> { false }
+        }
     }
 
 }
