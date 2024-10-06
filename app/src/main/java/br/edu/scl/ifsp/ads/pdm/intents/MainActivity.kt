@@ -1,14 +1,22 @@
 package br.edu.scl.ifsp.ads.pdm.intents
 
 
+import android.Manifest.permission.CALL_PHONE
 import android.content.Intent
 import android.content.Intent.ACTION_CALL
+import android.content.Intent.ACTION_CHOOSER
 import android.content.Intent.ACTION_DIAL
+import android.content.Intent.ACTION_PICK
 import android.content.Intent.ACTION_VIEW
+import android.content.Intent.EXTRA_INTENT
+import android.content.Intent.EXTRA_TITLE
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -28,7 +36,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var parl: ActivityResultLauncher<Intent>
-
+    //pcarl = Permissao Chamada Activity Result Laucher
+    private lateinit var pcarl: ActivityResultLauncher<String>
+    private lateinit var piarl: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,38 +59,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        piarl = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            resultado ->
+            //pra abrir a imagem pequena da galeria de forma que ocupa a tela toda (visualizador de imagem)
+            if (resultado.resultCode == RESULT_OK){
+                resultado.data?.data?.let {
+                    startActivity(Intent(ACTION_VIEW, it))
+                }
+            }
+        }
 
-        amb.entrarParametroBt.setOnClickListener {
+        pcarl = registerForActivityResult(ActivityResultContracts.RequestPermission())
+        { permissaoConcedida ->
+            //se o usuario permitir
+            chamarOuDiscar(true)
+            if (permissaoConcedida){
+                //fazer a chamada
+            } else{
+                Toast.makeText(this, "Permissao necessaria!", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-/*            Intent(this, ParametroActivity::class.java).apply {
-                putExtra(PARAMETRO_EXTRA, amb.parametroTv.text.toString())
-                startActivityForResult(this, PARAMETRO_REQUEST_CODE)
-            }*/
-// ou
+            amb.entrarParametroBt.setOnClickListener {
             Intent("MINHA_ACTION_PARA_PROXIMA_TELA").apply {
                 amb.parametroTv.text.toString().let {
                     putExtra(PARAMETRO_EXTRA,it)
                 }
                 parl.launch(this) //startActivityForResult(this, PARAMETRO_REQUEST_CODE)
             }
-
-
-            //jeito java
-            /*val parametroIntent = Intent(this, ParametroActivity::class.java)
-            parametroIntent.putExtra(PARAMETRO_EXTRA, amb.parametroTv.text.toString())
-            startActivityForResult(parametroIntent, PARAMETRO_REQUEST_CODE) */
         }
     }
-
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        //Result_ok é como se fosse o return 0 da linguagem c, indica que a tela encerrou com sucesso
-        if (requestCode == PARAMETRO_REQUEST_CODE && resultCode == RESULT_OK){
-            data?.getStringExtra(PARAMETRO_EXTRA)?.let{ retorno ->
-                amb.parametroTv.text = retorno
-            }
-        }
-    }*/
 
     //criar o menu
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -98,23 +106,52 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.callMi -> {
-                val telUri = Uri.parse("tel: ${amb.parametroTv.text.toString()}")
-                val discarIntent = Intent(ACTION_CALL)
-                discarIntent.setData(telUri)
-                startActivity(discarIntent)
+               if(checkSelfPermission(CALL_PHONE) == PERMISSION_GRANTED){
+                   chamarOuDiscar(true)
+               }else {
+                   pcarl.launch(CALL_PHONE)
+               }
                 true
             }
             R.id.dialMi -> {
-                    val telUri = Uri.parse("tel: ${amb.parametroTv.text.toString()}")
-                    val discarIntent = Intent(ACTION_DIAL)
-                    discarIntent.setData(telUri)
-                    startActivity(discarIntent)
-                    true
+                chamarOuDiscar(false)
+                true
             }
-            R.id.pickMi -> { true }
-            R.id.chooserMi -> { true }
+            //abrir a galeria
+            R.id.pickMi -> {
+                //pegando o caminho da galeria
+                val caminho = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES).path
+
+                //na intent diz que vou pegar algum recurso
+                val pegarImagemIntent = Intent(ACTION_PICK)
+                pegarImagemIntent.setDataAndType(Uri.parse(caminho), "image/*")
+                piarl.launch(pegarImagemIntent)
+                true
+            }
+            R.id.chooserMi -> {
+                Uri.parse(amb.parametroTv.text.toString()).let { url ->
+                    Intent(ACTION_VIEW, url).let{
+                        navegadorIntent ->
+                        val escolherAppIntent = Intent(ACTION_CHOOSER)
+                        escolherAppIntent.putExtra(EXTRA_TITLE, "escolha seu navegador")
+                        escolherAppIntent.putExtra(EXTRA_INTENT, navegadorIntent)
+                        startActivity(escolherAppIntent)
+                    }
+                }
+
+                true
+            }
             else -> { false }
         }
     }
 
+    private fun chamarOuDiscar(chamar: Boolean){
+        Uri.parse("tel: ${amb.parametroTv.text.toString()}").let{
+            val discarIntent = Intent(if(chamar) ACTION_CALL else ACTION_CALL).apply {
+                data = it
+                startActivity(this)
+            }
+        }
+    }
 }
